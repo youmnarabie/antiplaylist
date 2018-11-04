@@ -1,26 +1,37 @@
-import spotipy
-import sys
-import discogs_client
-import spotipy.oauth2 as oauth2
-import spotipy.util as util
-import numpy as np
-from spotipy.oauth2 import SpotifyClientCredentials
-from urllib.request import urlopen
-from bs4 import BeautifulSoup
+
 import os
-from json.decoder import JSONDecodeError
+import sys
 import json
+import spotipy
+import webbrowser
+import numpy as np
+import spotipy.util as util
+from bs4 import BeautifulSoup
+import spotipy.oauth2 as oauth2
+from urllib.request import urlopen
+from json.decoder import JSONDecodeError
+from spotipy.oauth2 import SpotifyClientCredentials
+
+
 
 url = input("Paste Playlist URL\n")
 type(url)
+userid = input("What's your userid?\n")
+type(userid)
+newname = input("What's your anti-playlist's name?")
+type(newname)
 
 
 split_url = url.split("/")
 
 playlist_info = split_url[6]
-id_end_index = playlist_info.find("?")
+if "?" in playlist_info:
+	id_end_index = playlist_info.find("?")
+	playlist_id = playlist_info[:id_end_index]
+else:
+	playlist_id = playlist_info
 
-playlist_id = playlist_info[:id_end_index]
+
 username = split_url[4]
 key_file = "keys.json"
 keys = json.load(open(key_file))
@@ -47,8 +58,6 @@ if token:
 	genres = list()
 	# List of artist names
 	names = list()
-	# Dictionary of artists: genres
-	artistgenres = dict() 
 	# Dictionary of genres : list of anti-genres 
 	antis = dict() 
 	# Dictionary of ids : song names for the final playlist
@@ -85,16 +94,11 @@ if token:
 
    	# Find the actual genre of every item in genres 
 	for artist in genres:
-    	# Remove the 0 to get a list of the artist's genres instead of just the first one 
 		artist_genres = artist.get("artists").get("items")[0].get('genres')
-		# i = 0
-		# while artist_genres == [] and i < len(artist.get("artists").get("items")):
-		# 	artist_genres = artist.get("artists").get("items")[i].get('genres')
-		# 	i+= 1
 		if artist_genres == []:
 			continue
 		most_common_genre = np.random.choice(artist_genres).replace(" ", "").replace("-", "").replace("+", "").replace("'", "").replace("&", "")
-		print(most_common_genre)
+		#print(most_common_genre)
 
 		quote_page = 'http://everynoise.com/engenremap-'+ most_common_genre + '.html'
 		page = urlopen(quote_page)
@@ -120,7 +124,10 @@ if token:
 
 		selected_anti = np.random.choice(anti_artists)
 		#print(selected_anti)
-		anti_object = spotify.search(selected_anti, limit = 1, type="artist")
+		try:
+			anti_object = spotify.search(selected_anti, limit = 1, type="artist")
+		except:
+			continue
 		anti_artistoo = anti_object.get("artists").get("items")
 		anti_artist_id = ""
 		while len(anti_artist_id) == 0:
@@ -152,16 +159,14 @@ if token:
 					break
         
 		#print(anti_artist_id)
-		#if anti_artist_id:
 		top10 = spotify.artist_top_tracks(anti_artist_id)
-    	#print(top10.get("tracks")[1])#.get("album").get("name"))
 		top10songs = list()
 		top10ids = list()
 		top10uris = list()
 		for song in top10.get("tracks"):
-			name = song.get("name")#.get('name')
-			songid = song.get("id")#.get("id")
-			songuri = song.get("uri")#.get("uri")
+			name = song.get("name")
+			songid = song.get("id")
+			songuri = song.get("uri")
 			#print(name, songid, songuri)
 			top10songs.append(name)
 			top10ids.append(songid)
@@ -171,17 +176,18 @@ if token:
 			continue
 		songindex = np.random.choice(len(top10songs))
 		final[top10songs[songindex]] = top10ids[songindex]
-	print(final)
-	userid = input("What's your user id?\n")
-	newname = input("What's your playlist name?\n")
+	#print(final)
+	# userid = input("What's your user id?\n")
+	# newname = input("What's your playlist name?\n")
 	newplaylist = spotify.user_playlist_create(userid, newname)
+	newurl = newplaylist.get("external_urls").get("spotify")
+	#print(newplaylist.get("external_urls").get("spotify"))
 	result = spotify.user_playlist_add_tracks(userid, newplaylist.get("id"), list(final.values()))
 	print(result)
 	for filename in os.listdir("."):
 		if filename.startswith(".cache-"):
 			os.remove(filename)
-
-
+	webbrowser.open(newurl)
 else:
     print("Can't get token for", username)
 
