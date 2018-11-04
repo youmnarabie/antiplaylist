@@ -18,9 +18,8 @@ url = input("Paste Playlist URL\n")
 type(url)
 userid = input("What's your userid?\n")
 type(userid)
-newname = input("What's your anti-playlist's name?")
+newname = input("What's your anti-playlist's name?\n")
 type(newname)
-
 
 split_url = url.split("/")
 
@@ -38,8 +37,6 @@ keys = json.load(open(key_file))
 client_id = keys["client_id"]
 client_secret = keys["client_secret"]
 
-# client_credentials_manager = SpotifyClientCredentials(client_id, client_secret)
-# spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 try:
     token = util.prompt_for_user_token(username, "playlist-modify-public", client_id, client_secret, redirect_uri='http://localhost/')
 except (AttributeError, JSONDecodeError):
@@ -98,7 +95,7 @@ if token:
 		if artist_genres == []:
 			continue
 		most_common_genre = np.random.choice(artist_genres).replace(" ", "").replace("-", "").replace("+", "").replace("'", "").replace("&", "")
-		#print(most_common_genre)
+		print("Selected genre for artist: " + most_common_genre)
 
 		quote_page = 'http://everynoise.com/engenremap-'+ most_common_genre + '.html'
 		page = urlopen(quote_page)
@@ -111,7 +108,7 @@ if token:
 				holder.extend(div.text.replace("»", "").strip().split("\n"))
 			antis[most_common_genre] = holder
 		curr_anti = np.random.choice(antis.get(most_common_genre)).replace(" ", "").replace("-", "").replace("+", "").replace("'", "").replace("&", "")
-		#print(curr_anti)
+		print("Selected anti genre for " + most_common_genre + ": " + curr_anti)
 
 
         # Go to anti page and find a random artist 
@@ -157,33 +154,28 @@ if token:
 				else: 
 					anti_artist_id = anti_artistoo[0].get("id")
 					break
-        
+		#print("Selected anti artist is: " + selected_anti)
 		#print(anti_artist_id)
 		top10 = spotify.artist_top_tracks(anti_artist_id)
 		top10songs = list()
 		top10ids = list()
-		top10uris = list()
 		for song in top10.get("tracks"):
 			name = song.get("name")
 			songid = song.get("id")
-			songuri = song.get("uri")
-			#print(name, songid, songuri)
+			#print(name, songid)
 			top10songs.append(name)
 			top10ids.append(songid)
-			top10uris.append(songuri)
 			#print(top10songs)
 		if len(top10songs) == 0:
 			continue
 		songindex = np.random.choice(len(top10songs))
 		final[top10songs[songindex]] = top10ids[songindex]
 	#print(final)
-	# userid = input("What's your user id?\n")
-	# newname = input("What's your playlist name?\n")
 	newplaylist = spotify.user_playlist_create(userid, newname)
 	newurl = newplaylist.get("external_urls").get("spotify")
 	#print(newplaylist.get("external_urls").get("spotify"))
 	result = spotify.user_playlist_add_tracks(userid, newplaylist.get("id"), list(final.values()))
-	print(result)
+	#print(result)
 	for filename in os.listdir("."):
 		if filename.startswith(".cache-"):
 			os.remove(filename)
