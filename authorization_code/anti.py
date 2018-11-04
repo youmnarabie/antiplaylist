@@ -91,7 +91,8 @@ if token:
    	# Find the actual genre of every item in genres 
     for artist in genres:
     	# Remove the 0 to get a list of the artist's genres instead of just the first one 
-        most_common_genre = np.random.choice(artist.get("artists").get("items")[0].get('genres')).replace(" ", "").replace("-", "")
+        artist_genres = artist.get("artists").get("items")[0].get('genres')
+        most_common_genre = np.random.choice(artist_genres).replace(" ", "").replace("-", "")
         print(most_common_genre)
         quote_page = 'http://everynoise.com/engenremap-'+ most_common_genre + '.html'
         page = urlopen(quote_page)
@@ -103,13 +104,25 @@ if token:
             for div in soup.findAll('div', attrs={'id':'mirror'}):
                 holder.extend(div.text.replace("»", "").strip().split("\n"))
             antis[most_common_genre] = holder
-        print(antis.get(most_common_genre))
+        curr_anti = np.random.choice(antis.get(most_common_genre)).replace(" ", "").replace("-", "")
+        print(curr_anti)
 
+    # playlist_name_id = dict()
+    # his_playists = spotify.user_playlists("particledetector")
+    # for i, item in enumerate(his_playists["items"]):
+    # 	if item.get('name') in playlist_name_id.keys():
+    # 		continue 
+    # 	else:
+    # 		playlist_name_id[item.get('name')] = item.get("id")
+    # while his_playists['next']:
+    #     his_playists = spotify.next(his_playists)
+    #     for i, item in enumerate(his_playists["items"]):
+    #         if item.get('name') in playlist_name_id.keys():
+    #             continue 
+    #         else:
+    #             playlist_name_id[item.get('name')] = item.get("id")
+    # print(playlist_name_id)
+
+        #print(his_playists)
 else:
     print("Can't get token for", username)
-
-
-
-
-
-
