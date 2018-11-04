@@ -12,8 +12,6 @@ from urllib.request import urlopen
 from json.decoder import JSONDecodeError
 from spotipy.oauth2 import SpotifyClientCredentials
 
-
-
 url = input("Paste Playlist URL\n")
 type(url)
 userid = input("What's your userid?\n")
@@ -60,7 +58,6 @@ if token:
 	# Dictionary of ids : song names for the final playlist
 	final = dict()
 
-
     #Find a list of all track ids in the playlist 
 	for i, item in enumerate(songs["items"]):
 		song = item["track"]
@@ -73,7 +70,6 @@ if token:
 			song = item["track"]
 			ids.append(song["id"])
 			artists.append(song["artists"])
-
 
     # List of track objects
 	all_tracks = spotify.tracks(ids)
@@ -110,7 +106,6 @@ if token:
 		curr_anti = np.random.choice(antis.get(most_common_genre)).replace(" ", "").replace("-", "").replace("+", "").replace("'", "").replace("&", "")
 		print("Selected anti genre for " + most_common_genre + ": " + curr_anti)
 
-
         # Go to anti page and find a random artist 
 		quote_page = 'http://everynoise.com/engenremap-'+ curr_anti + '.html'
 		page = urlopen(quote_page)
@@ -138,7 +133,6 @@ if token:
 				anti_artists.extend(div.text.replace("»", "").strip().split("\n"))
 
 			selected_anti = np.random.choice(anti_artists)
-			#print(selected_anti)
 			try:
 				anti_object = spotify.search(selected_anti, limit = 1, type="artist")
 			except:
@@ -155,7 +149,6 @@ if token:
 					anti_artist_id = anti_artistoo[0].get("id")
 					break
 		#print("Selected anti artist is: " + selected_anti)
-		#print(anti_artist_id)
 		top10 = spotify.artist_top_tracks(anti_artist_id)
 		top10songs = list()
 		top10ids = list()
@@ -170,10 +163,8 @@ if token:
 			continue
 		songindex = np.random.choice(len(top10songs))
 		final[top10songs[songindex]] = top10ids[songindex]
-	#print(final)
 	newplaylist = spotify.user_playlist_create(userid, newname)
 	newurl = newplaylist.get("external_urls").get("spotify")
-	#print(newplaylist.get("external_urls").get("spotify"))
 	result = spotify.user_playlist_add_tracks(userid, newplaylist.get("id"), list(final.values()))
 	#print(result)
 	for filename in os.listdir("."):
