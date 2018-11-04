@@ -9,7 +9,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import os
 from json.decoder import JSONDecodeError
-import re
+import json
 
 url = input("Paste Playlist URL\n")
 type(url)
@@ -22,9 +22,10 @@ id_end_index = playlist_info.find("?")
 
 playlist_id = playlist_info[:id_end_index]
 username = split_url[4]
-
-client_id = '70ce61b3518c4b68a9b583e1f9e971b4'
-client_secret = '36b26da39113479dac1f38743ada505f'
+key_file = "keys.json"
+keys = json.load(open(key_file))
+client_id = keys["client_id"]
+client_secret = keys["client_secret"]
 
 # client_credentials_manager = SpotifyClientCredentials(client_id, client_secret)
 # spotify = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
