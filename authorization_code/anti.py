@@ -8,7 +8,22 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-
+def getAnti(artist):
+	artist_genres = artist.get("artists").get("items")[0].get('genres')
+    most_common_genre = np.random.choice(artist_genres).replace(" ", "").replace("-", "")
+    print(most_common_genre)
+    quote_page = 'http://everynoise.com/engenremap-'+ most_common_genre + '.html'
+    page = urlopen(quote_page)
+    soup = BeautifulSoup(page, 'html.parser')
+    holder = list()
+    if most_common_genre in antis.keys():
+    	holder = antis.get(most_common_genre)
+    else: 
+        for div in soup.findAll('div', attrs={'id':'mirror'}):
+            holder.extend(div.text.replace("»", "").strip().split("\n"))
+        antis[most_common_genre] = holder
+    curr_anti = np.random.choice(antis.get(most_common_genre)).replace(" ", "").replace("-", "")
+    return curr_anti
 #url = sys.argv
 url = input("Paste Playlist URL\n")
 type(url)
@@ -45,30 +60,20 @@ if token:
     # Dictionary of genres : list of anti-genres 
     antis = dict() 
 
-    #songnames = list()
-    #songgenres = list()
 
     #Find a list of all track ids in the playlist 
     for i, item in enumerate(songs["items"]):
         song = item["track"]
         ids.append(song["id"])
         artists.append(song["artists"])
-        #songnames.append(song["name"])
+    # If there are more pages of songs, add them too. 
     while songs['next']:
         songs = sp.next(songs)
         for i, item in enumerate(songs["items"]):
             song = item["track"]
             ids.append(song["id"])
             artists.append(song["artists"])
-            #songnames.append(song["name"])
-    # key = "rMSSoUTCGrIYupZvSiEe"
-    # secret = "EVxsbFqVAIFpqIuQWswsUBCzKeKncxWo"
-    # d = discogs_client.Client('ExampleApplication/0.1', user_token = 'PGtPrKkPRHNwSSkSEnDAUrothkMjdsoPczOyeeYu')
-    # for name in songnames:
-    #     result = d.search(name)
-    #     genre = result[0].data.get("genre")
-    #     songgenres.append(genre)
-    # print(songgenres)
+
 
     # List of track objects
     all_tracks = spotify.tracks(ids)
@@ -84,21 +89,22 @@ if token:
    	# Find the actual genre of every item in genres 
     for artist in genres:
     	# Remove the 0 to get a list of the artist's genres instead of just the first one 
-        artist_genres = artist.get("artists").get("items")[0].get('genres')
-        most_common_genre = np.random.choice(artist_genres).replace(" ", "").replace("-", "")
-        print(most_common_genre)
-        quote_page = 'http://everynoise.com/engenremap-'+ most_common_genre + '.html'
-        page = urlopen(quote_page)
-        soup = BeautifulSoup(page, 'html.parser')
-        holder = list()
-        if most_common_genre in antis.keys():
-        	holder = antis.get(most_common_genre)
-        else: 
-            for div in soup.findAll('div', attrs={'id':'mirror'}):
-                holder.extend(div.text.replace("»", "").strip().split("\n"))
-            antis[most_common_genre] = holder
-        curr_anti = np.random.choice(antis.get(most_common_genre)).replace(" ", "").replace("-", "")
-        print(curr_anti)
+        # artist_genres = artist.get("artists").get("items")[0].get('genres')
+        # most_common_genre = np.random.choice(artist_genres).replace(" ", "").replace("-", "")
+        # print(most_common_genre)
+        # quote_page = 'http://everynoise.com/engenremap-'+ most_common_genre + '.html'
+        # page = urlopen(quote_page)
+        # soup = BeautifulSoup(page, 'html.parser')
+        # holder = list()
+        # if most_common_genre in antis.keys():
+        # 	holder = antis.get(most_common_genre)
+        # else: 
+        #     for div in soup.findAll('div', attrs={'id':'mirror'}):
+        #         holder.extend(div.text.replace("»", "").strip().split("\n"))
+        #     antis[most_common_genre] = holder
+        # curr_anti = np.random.choice(antis.get(most_common_genre)).replace(" ", "").replace("-", "")
+        # print(curr_anti)
+        curr_anti = getAnti(artist)
 
 
         # Go to anti page and find a random artist 
@@ -133,23 +139,6 @@ if token:
        	#print(top10songs)
 
 
-    # playlist_name_id = dict()
-    # his_playists = spotify.user_playlists("particledetector")
-    # for i, item in enumerate(his_playists["items"]):
-    # 	if item.get('name') in playlist_name_id.keys():
-    # 		continue 
-    # 	else:
-    # 		playlist_name_id[item.get('name')] = item.get("id")
-    # while his_playists['next']:
-    #     his_playists = spotify.next(his_playists)
-    #     for i, item in enumerate(his_playists["items"]):
-    #         if item.get('name') in playlist_name_id.keys():
-    #             continue 
-    #         else:
-    #             playlist_name_id[item.get('name')] = item.get("id")
-    # print(playlist_name_id)
-
-        #print(his_playists)
 else:
     print("Can't get token for", username)
 
